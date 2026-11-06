@@ -1,0 +1,263 @@
+<title>Four Coin Arcade</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: arcade cabinet marquee on top, four cartridge cards in a 2x2 grid (1 col on phones) over a live neon floor. Single dark look by choice. */
+:root{
+  --ink:#070d1f;
+  --panel:#0f1830;
+  --paper:#f3f6ff;
+  --muted:rgba(243,246,255,.6);
+  --signal:#ffcf3f;
+  --hot:#ff3d6e;
+  --cool:#3de0ff;
+  --lime:#9dff5c;
+  --display:'Bungee','Impact','Arial Black',system-ui,sans-serif;
+  --ui:'Chakra Petch','Avenir Next','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{min-height:100%}
+body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--ui);overflow-x:hidden}
+#floor{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding-block:48px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:36px}
+header{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.eyebrow{font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--cool);font-weight:700}
+h1{font-family:var(--display);font-size:clamp(40px,10vw,92px);line-height:.95;margin:0;white-space:nowrap}
+h1 span{display:inline-block;color:var(--paper);text-shadow:0 0 18px rgba(61,224,255,.55),0 5px 0 rgba(0,0,0,.4);
+  animation:drop .7s cubic-bezier(.2,1.5,.4,1) both, flicker 6s linear infinite;animation-delay:calc(var(--i)*55ms), calc(var(--i)*230ms + 1s)}
+h1 .c{color:var(--signal);text-shadow:0 0 22px rgba(255,207,63,.6),0 5px 0 rgba(0,0,0,.4)}
+@keyframes drop{from{transform:translateY(-110px) rotate(-10deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.35}95%{opacity:1}97%{opacity:.6}}
+.lede{margin:0;max-width:44ch;color:var(--muted);font-size:15px;line-height:1.55;text-wrap:balance}
+.coins{display:flex;gap:8px;align-items:center;font-size:12px;letter-spacing:.24em;color:var(--signal);font-weight:700}
+.coins i{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3b0,var(--signal) 55%,#b8860b);display:inline-block;animation:spin 1.6s linear infinite;animation-delay:calc(var(--i)*.2s)}
+@keyframes spin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.15)}}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+@media (max-width:720px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{--acc:var(--cool);position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--panel);
+  border:1px solid rgba(243,246,255,.1);border-radius:14px;overflow:hidden;transform-style:preserve-3d;
+  transition:transform .25s cubic-bezier(.2,.9,.3,1.2),border-color .2s,box-shadow .25s;
+  animation:rise .7s cubic-bezier(.2,1.2,.4,1) both;animation-delay:calc(.35s + var(--i)*110ms)}
+@keyframes rise{from{transform:translateY(50px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+.card:hover,.card:focus-visible{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 18px 50px -12px var(--acc)}
+.card:focus-visible{outline:none}
+.card canvas{display:block;width:100%;aspect-ratio:16/9;max-width:100%;background:#050914}
+.card .body{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.genre{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.idx{font-size:11px;letter-spacing:.18em;color:var(--muted);font-variant-numeric:tabular-nums}
+.card h2{font-family:var(--display);font-size:30px;margin:0;letter-spacing:.01em}
+.card p{margin:0;color:var(--muted);font-size:14px;line-height:1.5;min-width:0}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px}
+.best{font-size:12px;letter-spacing:.14em;color:var(--muted);font-variant-numeric:tabular-nums}
+.best strong{color:var(--paper);font-size:15px;letter-spacing:.02em;margin-left:6px}
+.play{font-family:var(--display);font-size:14px;color:var(--ink);background:var(--acc);padding:8px 16px;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:transform .15s}
+.card:hover .play{transform:translateX(4px)}
+.card .sheen{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.08) 50%,transparent 65%);transform:translateX(-100%);transition:transform .6s}
+.card:hover .sheen{transform:translateX(100%)}
+footer{text-align:center;font-size:12px;color:var(--muted);letter-spacing:.12em}
+@media (prefers-reduced-motion: reduce){h1 span,.coins i,.card{animation:none!important}.card{transition:none}}
+</style>
+
+<canvas id="floor" aria-hidden="true"></canvas>
+<main>
+  <header>
+    <div class="coins"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i>INSERT COIN</div>
+    <h1 id="logo" aria-label="Four Coin Arcade"></h1>
+    <p class="lede">장르가 다른 네 개의 게임. 원하는 카트리지를 골라 바로 플레이하세요. 최고 기록은 이 브라우저에 저장됩니다.</p>
+  </header>
+
+  <section class="grid" aria-label="게임 목록">
+    <a class="card" href="games/skyburst.html" style="--acc:#ffcf3f;--i:0" data-game="skyburst" data-key="skyburst-best">
+      <canvas width="640" height="360"></canvas><span class="sheen"></span>
+      <div class="body">
+        <div class="row"><span class="genre">종스크롤 슈팅</span><span class="idx">CART 01</span></div>
+        <h2>Skyburst</h2>
+        <p>바다 위를 날며 적 편대와 거대 보스를 격추하세요. 파워업으로 화력을 5단계까지.</p>
+        <div class="foot"><span class="best">BEST<strong>—</strong></span><span class="play">PLAY ▶</span></div>
+      </div>
+    </a>
+    <a class="card" href="games/prism.html" style="--acc:#c86bff;--i:1" data-game="prism" data-key="arcade-best-prism">
+      <canvas width="640" height="360"></canvas><span class="sheen"></span>
+      <div class="body">
+        <div class="row"><span class="genre">네온 벽돌깨기</span><span class="idx">CART 02</span></div>
+        <h2>Prism</h2>
+        <p>빛나는 공으로 네온 블록을 부수세요. 폭발 블록 연쇄, 멀티볼, 레이저 패들.</p>
+        <div class="foot"><span class="best">BEST<strong>—</strong></span><span class="play">PLAY ▶</span></div>
+      </div>
+    </a>
+    <a class="card" href="games/dash.html" style="--acc:#ff8a3d;--i:2" data-game="dash" data-key="arcade-best-dash">
+      <canvas width="640" height="360"></canvas><span class="sheen"></span>
+      <div class="body">
+        <div class="row"><span class="genre">무한 러너</span><span class="idx">CART 03</span></div>
+        <h2>Dash</h2>
+        <p>점점 빨라지는 도시를 질주하세요. 점프와 슬라이드로 장애물을 넘고 코인을 모으세요.</p>
+        <div class="foot"><span class="best">BEST<strong>—</strong></span><span class="play">PLAY ▶</span></div>
+      </div>
+    </a>
+    <a class="card" href="games/horde.html" style="--acc:#9dff5c;--i:3" data-game="horde" data-key="arcade-best-horde">
+      <canvas width="640" height="360"></canvas><span class="sheen"></span>
+      <div class="body">
+        <div class="row"><span class="genre">탑다운 생존 슈터</span><span class="idx">CART 04</span></div>
+        <h2>Horde</h2>
+        <p>사방에서 밀려오는 무리를 버텨내세요. 레벨업마다 업그레이드를 골라 빌드를 완성합니다.</p>
+        <div class="foot"><span class="best">BEST<strong>—</strong></span><span class="play">PLAY ▶</span></div>
+      </div>
+    </a>
+  </section>
+  <footer>마우스 · 키보드 · 터치 지원</footer>
+</main>
+
+<script>
+(() => {
+'use strict';
+const TAU = Math.PI * 2, rand = (a, b) => a + Math.random() * (b - a);
+const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const get = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+// logo
+document.getElementById('logo').innerHTML = [...'FOUR COIN'].map((c, i) =>
+  c === ' ' ? '<span style="--i:' + i + '">&nbsp;</span>' : `<span class="${i < 4 ? 'c' : ''}" style="--i:${i}">${c}</span>`).join('');
+
+// best scores
+document.querySelectorAll('.card').forEach(c => {
+  const v = +get(c.dataset.key) || 0;
+  c.querySelector('.best strong').textContent = v ? v.toLocaleString() : '—';
+});
+
+// tilt
+document.querySelectorAll('.card').forEach(c => {
+  if (RM) return;
+  c.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    c.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-4px)`;
+  });
+  c.addEventListener('pointerleave', () => { c.style.transform = ''; });
+});
+
+// background neon floor
+const fl = document.getElementById('floor'), fg = fl.getContext('2d');
+let FW = 0, FH = 0, dpr = 1;
+const motes = Array.from({ length: 60 }, () => ({ x: Math.random(), y: Math.random(), s: rand(.5, 2), v: rand(.01, .04), c: ['61,224,255', '255,61,110', '255,207,63', '157,255,92'][Math.random() * 4 | 0] }));
+function fresize() { dpr = Math.min(2, devicePixelRatio || 1); FW = innerWidth; FH = innerHeight; fl.width = FW * dpr; fl.height = FH * dpr; }
+addEventListener('resize', fresize); fresize();
+function drawFloor(t) {
+  fg.setTransform(dpr, 0, 0, dpr, 0, 0);
+  fg.fillStyle = '#070d1f'; fg.fillRect(0, 0, FW, FH);
+  const hz = FH * .52, sg = fg.createLinearGradient(0, 0, 0, hz);
+  sg.addColorStop(0, '#070d1f'); sg.addColorStop(1, '#2a0f3a'); fg.fillStyle = sg; fg.fillRect(0, 0, FW, hz);
+  // sun
+  const sr = Math.min(FW, FH) * .2;
+  const sun = fg.createLinearGradient(0, hz - sr, 0, hz); sun.addColorStop(0, 'rgba(255,207,63,.55)'); sun.addColorStop(1, 'rgba(255,61,110,.35)');
+  fg.fillStyle = sun; fg.beginPath(); fg.arc(FW / 2, hz, sr, Math.PI, 0); fg.fill();
+  fg.fillStyle = '#2a0f3a'; for (let i = 0; i < 6; i++) { const y = hz - sr * (.12 + i * .14) - ((t * 8) % (sr * .14)); fg.fillRect(FW / 2 - sr, y, sr * 2, 2 + i * .6); }
+  // grid
+  fg.fillStyle = '#0a0f24'; fg.fillRect(0, hz, FW, FH - hz);
+  fg.strokeStyle = 'rgba(200,107,255,.35)'; fg.lineWidth = 1; fg.beginPath();
+  for (let i = -20; i <= 20; i++) { fg.moveTo(FW / 2 + i * 12, hz); fg.lineTo(FW / 2 + i * FW * .12, FH); }
+  const off = (t * .35) % 1;
+  for (let i = 0; i < 14; i++) { const k = (i + off) / 14, y = hz + (FH - hz) * k * k; fg.moveTo(0, y); fg.lineTo(FW, y); }
+  fg.stroke();
+  fg.fillStyle = 'rgba(255,61,110,.5)'; fg.fillRect(0, hz - 1, FW, 2);
+  // motes
+  fg.globalCompositeOperation = 'lighter';
+  for (const m of motes) {
+    m.y -= m.v * .016; if (m.y < -.05) { m.y = 1.05; m.x = Math.random(); }
+    const a = .35 + .35 * Math.sin(t * 2 + m.x * 20);
+    fg.fillStyle = `rgba(${m.c},${a})`; fg.beginPath(); fg.arc(m.x * FW, m.y * FH, m.s, 0, TAU); fg.fill();
+  }
+  fg.globalCompositeOperation = 'source-over';
+  // darken for legibility
+  fg.fillStyle = 'rgba(7,13,31,.45)'; fg.fillRect(0, 0, FW, FH);
+}
+
+// card previews
+const PREV = {
+  skyburst(g, t, W, H) {
+    const sea = g.createLinearGradient(0, 0, 0, H); sea.addColorStop(0, '#0b4a70'); sea.addColorStop(1, '#14839e'); g.fillStyle = sea; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(215,255,255,.35)'; for (let i = 0; i < 40; i++) { const x = (i * 97) % W, y = (i * 53 + t * 60) % H; g.fillRect(x, y, 14, 2); }
+    g.fillStyle = 'rgba(255,255,255,.9)'; for (let i = 0; i < 3; i++) { const y = ((i * 170 + t * 110) % (H + 160)) - 80, x = (i * 230 + 80) % W; g.beginPath(); for (const [dx, dy, r] of [[0, 0, 34], [30, 6, 26], [-28, 8, 24]]) { g.moveTo(x + dx + r, y + dy); g.arc(x + dx, y + dy, r, 0, TAU); } g.fill(); }
+    const px = W / 2 + Math.sin(t * 1.3) * W * .25, py = H * .78;
+    g.globalCompositeOperation = 'lighter'; g.fillStyle = '#fffbe0';
+    for (let i = 0; i < 8; i++) { const y = py - 30 - ((t * 500 + i * 40) % 300); g.fillRect(px - 6, y, 3, 14); g.fillRect(px + 3, y, 3, 14); }
+    const ex = W / 2 + Math.sin(t * .9) * W * .3, ey = H * .25, k = (t * 1.2) % 1;
+    g.strokeStyle = `rgba(255,220,150,${1 - k})`; g.lineWidth = 4 * (1 - k); g.beginPath(); g.arc(ex, ey, 10 + k * 50, 0, TAU); g.stroke();
+    g.fillStyle = '#ff3d6e'; for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + t; g.beginPath(); g.arc(ex + Math.cos(a) * (40 + k * 80), ey + Math.sin(a) * (40 + k * 80), 4, 0, TAU); g.fill(); }
+    g.globalCompositeOperation = 'source-over';
+    plane(g, px, py, '#f3f6ff', 1.4);
+  },
+  prism(g, t, W, H) {
+    g.fillStyle = '#0b0718'; g.fillRect(0, 0, W, H);
+    const cols = 10, bw = W / cols, cl = ['#c86bff', '#3de0ff', '#ff3d6e', '#ffcf3f', '#9dff5c'];
+    for (let r = 0; r < 5; r++) for (let c = 0; c < cols; c++) {
+      if ((r * 7 + c * 3 + Math.floor(t * 1.5)) % 9 === 0) continue;
+      const pulse = .6 + .4 * Math.sin(t * 3 + c * .5 + r);
+      g.fillStyle = cl[r]; g.globalAlpha = .35 + pulse * .5; g.fillRect(c * bw + 4, 30 + r * 26, bw - 8, 18); g.globalAlpha = 1;
+    }
+    const bx = W / 2 + Math.sin(t * 1.7) * W * .4, by = H * .55 + Math.cos(t * 2.3) * H * .25;
+    g.globalCompositeOperation = 'lighter';
+    for (let i = 8; i > 0; i--) { const tx = W / 2 + Math.sin((t - i * .02) * 1.7) * W * .4, ty = H * .55 + Math.cos((t - i * .02) * 2.3) * H * .25; g.fillStyle = `rgba(200,107,255,${.08 * (9 - i)})`; g.beginPath(); g.arc(tx, ty, 8 - i * .5, 0, TAU); g.fill(); }
+    const rg = g.createRadialGradient(bx, by, 0, bx, by, 24); rg.addColorStop(0, '#fff'); rg.addColorStop(.3, 'rgba(200,107,255,.8)'); rg.addColorStop(1, 'rgba(200,107,255,0)'); g.fillStyle = rg; g.beginPath(); g.arc(bx, by, 24, 0, TAU); g.fill();
+    g.globalCompositeOperation = 'source-over';
+    const pxp = W / 2 + Math.sin(t * 1.7) * W * .35; g.fillStyle = '#3de0ff'; g.fillRect(pxp - 50, H - 26, 100, 10); g.fillStyle = '#fff'; g.fillRect(pxp - 50, H - 26, 100, 3);
+  },
+  dash(g, t, W, H) {
+    const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#2b1450'); sky.addColorStop(1, '#ff8a3d'); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+    for (let layer = 0; layer < 2; layer++) {
+      g.fillStyle = layer ? '#1a0f2e' : '#3b1d55'; const sp = layer ? 120 : 50, base = layer ? H * .75 : H * .6;
+      for (let i = -1; i < 12; i++) { const w = 60, x = ((i * w - t * sp) % (W + w * 2) + W + w * 2) % (W + w * 2) - w, h = 40 + ((i * 37 + layer * 11) % 5) * 22; g.fillRect(x, base - h, w - 6, h + H); }
+    }
+    g.fillStyle = '#0d0818'; g.fillRect(0, H * .82, W, H);
+    g.strokeStyle = 'rgba(255,138,61,.6)'; g.lineWidth = 2; g.beginPath(); for (let i = 0; i < 12; i++) { const x = ((i * 70 - t * 300) % (W + 70) + W + 70) % (W + 70) - 35; g.moveTo(x, H * .86); g.lineTo(x + 30, H * .86); } g.stroke();
+    const ph = (t * 1.1) % 1, jump = ph < .45 ? Math.sin(ph / .45 * Math.PI) : 0, rx = W * .3, ry = H * .82 - jump * H * .35;
+    const ox = W - ((t * 300) % (W * 1.1)); g.fillStyle = '#ff3d6e'; g.fillRect(ox, H * .82 - 34, 18, 34);
+    g.fillStyle = '#ffcf3f'; for (let i = 0; i < 5; i++) { const cx = ((W * .6 + i * 40 - t * 300) % (W + 200) + W + 200) % (W + 200) - 100; g.beginPath(); g.ellipse(cx, H * .5 - Math.sin(i / 4 * Math.PI) * 30, 6 * Math.abs(Math.cos(t * 5 + i)) + 1, 7, 0, 0, TAU); g.fill(); }
+    g.fillStyle = '#f3f6ff'; const squash = jump > 0 ? 1.1 : 1; g.fillRect(rx - 9 / squash, ry - 34 * squash, 18 / squash, 26 * squash); g.beginPath(); g.arc(rx, ry - 40 * squash, 8, 0, TAU); g.fill();
+    g.strokeStyle = '#f3f6ff'; g.lineWidth = 5; g.lineCap = 'round'; const lg = Math.sin(t * 18) * 10 * (jump ? .3 : 1); g.beginPath(); g.moveTo(rx, ry - 10); g.lineTo(rx + lg, ry); g.moveTo(rx, ry - 10); g.lineTo(rx - lg, ry); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 1; g.beginPath(); for (let i = 0; i < 10; i++) { const y = (i * 37) % H, x = ((i * 113 - t * 900) % W + W) % W; g.moveTo(x, y); g.lineTo(x + 60, y); } g.stroke();
+  },
+  horde(g, t, W, H) {
+    g.fillStyle = '#081410'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(157,255,92,.12)'; g.lineWidth = 1; g.beginPath(); for (let x = 0; x < W; x += 32) { g.moveTo(x, 0); g.lineTo(x, H); } for (let y = 0; y < H; y += 32) { g.moveTo(0, y); g.lineTo(W, y); } g.stroke();
+    const cx = W / 2 + Math.sin(t * .8) * 30, cy = H / 2 + Math.cos(t * .6) * 20;
+    for (let i = 0; i < 26; i++) {
+      const a = i / 26 * TAU + t * .2, rr = 60 + ((i * 47 + t * 40) % 140);
+      const x = cx + Math.cos(a) * rr * 1.5, y = cy + Math.sin(a) * rr;
+      g.fillStyle = i % 5 === 0 ? '#ff3d6e' : '#c86bff'; g.beginPath(); g.arc(x, y, i % 5 === 0 ? 9 : 6, 0, TAU); g.fill();
+    }
+    g.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 3; k++) { const a = t * 3 + k * TAU / 3; g.fillStyle = '#9dff5c'; g.beginPath(); g.arc(cx + Math.cos(a) * 34, cy + Math.sin(a) * 34, 5, 0, TAU); g.fill(); }
+    const aim = t * 1.7; g.strokeStyle = '#fffbe0'; g.lineWidth = 2; g.beginPath();
+    for (let i = 0; i < 5; i++) { const d = ((t * 400 + i * 50) % 220) + 14; g.moveTo(cx + Math.cos(aim) * d, cy + Math.sin(aim) * d); g.lineTo(cx + Math.cos(aim) * (d + 10), cy + Math.sin(aim) * (d + 10)); } g.stroke();
+    const k = (t * .9) % 1; g.strokeStyle = `rgba(157,255,92,${1 - k})`; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, 20 + k * 120, 0, TAU); g.stroke();
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = '#f3f6ff'; g.beginPath(); g.arc(cx, cy, 11, 0, TAU); g.fill(); g.fillStyle = '#9dff5c'; g.beginPath(); g.arc(cx + Math.cos(aim) * 7, cy + Math.sin(aim) * 7, 4, 0, TAU); g.fill();
+  }
+};
+function plane(g, x, y, col, s) {
+  const P = [[0, -28], [4, -19], [6, -6], [27, 7], [27, 12], [7, 10], [10, 20], [3, 19], [0, 16]];
+  g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = col; g.beginPath(); g.moveTo(0, -28);
+  for (let i = 1; i < P.length; i++) g.lineTo(P[i][0], P[i][1]); for (let i = P.length - 2; i >= 0; i--) g.lineTo(-P[i][0], P[i][1]);
+  g.closePath(); g.fill(); g.restore();
+}
+const cards = [...document.querySelectorAll('.card')].map(c => ({ el: c, cv: c.querySelector('canvas'), fn: PREV[c.dataset.game], hover: false }));
+cards.forEach(c => { c.g = c.cv.getContext('2d'); c.el.addEventListener('pointerenter', () => c.hover = true); c.el.addEventListener('pointerleave', () => c.hover = false); });
+
+let t0 = performance.now(), tt = 0, lastT = t0;
+function loop(now) {
+  const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+  const t = (now - t0) / 1000;
+  drawFloor(RM ? 0 : t);
+  for (const c of cards) { c.t = (c.t || 0) + dt * (RM ? 0 : (c.hover ? 1.8 : 1)); c.fn(c.g, c.t + 1, c.cv.width, c.cv.height); }
+  requestAnimationFrame(loop);
+}
+for (const c of cards) c.fn(c.g, 1, c.cv.width, c.cv.height);
+requestAnimationFrame(loop);
+})();
+</script>
